@@ -1,0 +1,21 @@
+%%capture
+!pip install pandas_read_xml
+
+import pandas_read_xml as pdx
+import pandas as pd
+
+def parse_tecan_xml_to_df(file_name):
+  root_key_list = ['MeasurementResultData', 'Section', 'Data']
+  df = pdx.read_xml(file_path, root_key_list)
+
+  values = []
+  data = {}
+
+  for well in range(len(df.Well.iloc[1])):
+    values = []
+    for cycle in range(len(df)):
+      values.append(float(df.Well.iloc[cycle][well]['Single']['#text']))
+    data[str(df.Well.iloc[cycle][well]['@Pos'])] = values
+    df = pd.concat([df, pd.DataFrame.from_dict(data)], axis=1, sort=False) 
+    df = df.drop('Well', axis = 1)
+    return df
